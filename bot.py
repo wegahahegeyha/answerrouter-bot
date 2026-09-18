@@ -144,11 +144,11 @@ def handle_prompt_cmd(chat_id, conn, text, doc=None):
         # set prompt from attached document
         if not doc:
             tg('sendMessage', chat_id=chat_id,
-               text='Пришли файл .txt с подписью /promptset или ответом на него')
+               text='Send a .txt file with caption /promptset or as a reply to it')
             return
         raw = file_bytes(doc)
         if not raw:
-            tg('sendMessage', chat_id=chat_id, text='Не смог скачать файл')
+            tg('sendMessage', chat_id=chat_id, text='Could not download the file')
             return
         new_prompt = raw.decode('utf-8', errors='replace')
         with open(path, 'w') as f:
@@ -191,16 +191,16 @@ def handle_model_cmd(chat_id, text):
     global MODEL
     arg = text[len('/model'):].strip()
     if not arg:
-        tg('sendMessage', chat_id=chat_id, text='Текущая модель:\n' + MODEL)
+        tg('sendMessage', chat_id=chat_id, text='Current model:\n' + MODEL)
         log('model queried:', MODEL)
         return
     # validate before switching
     test = or_chat([{'role': 'user', 'content': 'say ok'}], model=arg)
     if test is None:
-        tg('sendMessage', chat_id=chat_id, text='Модель ' + arg + ' не отвечает или не существует, не переключаю')
+        tg('sendMessage', chat_id=chat_id, text='Model ' + arg + ' does not respond or does not exist, not switching')
         return
     MODEL = arg
-    tg('sendMessage', chat_id=chat_id, text='Модель переключена на:\n' + MODEL)
+    tg('sendMessage', chat_id=chat_id, text='Model switched to:\n' + MODEL)
     log('model changed to', MODEL)
 
 def handle_owner_command(msg):
@@ -222,7 +222,7 @@ def handle_owner_command(msg):
         handle_model_cmd(chat['id'], text)
     elif text.startswith('/start') or text.startswith('/help'):
         tg('sendMessage', chat_id=chat['id'],
-           text='Команды:\n/prompt - прислать промпт файлом\n/prompt текст - заменить промпт коротким текстом\n/promptadd текст - добавить текст в конец промпта\n/promptset + файл .txt - заменить промпт содержимым файла\n/model - показать текущую модель\n/model имя - сменить модель (например: inclusionai/ling-3.0-flash-vl:free)')
+           text='Commands:\n/prompt - send current prompt as a file\n/prompt text - replace prompt with short text\n/promptadd text - append text to the end of the prompt\n/promptset + .txt file - replace prompt with file contents\n/model - show current model\n/model name - switch model (e.g. inclusionai/ling-3.0-flash-vl:free)')
 
 def extract_content(msg):
     """Returns (kind, content). kind: text|photo|skip"""
@@ -299,10 +299,10 @@ def main():
         sys.exit(1)
     log("authorized as @%s" % me['result']['username'])
     tg('setMyCommands', commands=[
-        {'command': 'prompt', 'description': 'Прислать промпт файлом (текст - заменить)'},
-        {'command': 'promptadd', 'description': 'Добавить текст в конец промпта'},
-        {'command': 'promptset', 'description': 'Пришлите с файлом .txt - заменить промпт из файла'},
-        {'command': 'model', 'description': 'Показать/сменить модель (model имя)'}])
+        {'command': 'prompt', 'description': 'Send current prompt as a file (text - replace)'},
+        {'command': 'promptadd', 'description': 'Append text to the end of the prompt'},
+        {'command': 'promptset', 'description': 'Send with a .txt file - replace prompt from file'},
+        {'command': 'model', 'description': 'Show/switch the model (model name)'}])
 
     offset = 0
     while True:

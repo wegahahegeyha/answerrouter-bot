@@ -1,90 +1,90 @@
 # answerrouter-bot
 
-Автоответчик для Telegram, который отвечает в твоих личных чатах от твоего имени через функцию Telegram Business "Автоматизация чатов" (Чат-боты). Пишет в твоём стиле, видит текст и фото, работает на бесплатных моделях OpenRouter.
+A Telegram auto-reply bot that answers in your personal chats on your behalf via the Telegram Business "Chatbots" feature. Writes in your style, reads text and photos, runs on free OpenRouter models.
 
-## Возможности
-- Отвечает от твоего имени во всех чатах, где бот подключён как чат-бот
-- Мультимодальность: читает текст и фотографии (фото обрабатываются в RAM и не сохраняются на диск)
-- Персонализация: промпт с примерами твоих сообщений (см. prompt.txt) + утилита style-extraction-prompt.txt для составления стилевого промпта по экспорту переписки
-- Команды управления промптом и моделью прямо из чата (только у владельца)
-- Контекст 10+10 последних сообщений, хранится только в RAM
-- Живой лог через stdout (удобно в tmux)
+## Features
+- Replies as you in every chat where the bot is connected as a chatbot
+- Multimodal: reads text and photos (photos are processed in RAM, never written to disk)
+- Personalization: a persona prompt with real message examples (see prompt.txt), plus style-extraction-prompt.txt - a meta-prompt for building a style prompt from your chat export
+- Prompt and model management commands right from the chat (owner only)
+- Context: last 10+10 messages, kept in RAM only
+- Live log via stdout (convenient in tmux)
 
-## Требования
-- Python 3.8+ (только стандартная библиотека, pip не нужен)
-- VPS/ПК с доступом к Telegram (при блокировках - HTTP-прокси)
-- Telegram Premium у владельца аккаунта
-- Аккаунт на openrouter.ai (бесплатная регистрация)
+## Requirements
+- Python 3.8+ (standard library only, no pip installs)
+- A VPS/PC that can reach Telegram (use an HTTP proxy if it is blocked in your region)
+- Telegram Premium on the owner's account
+- An openrouter.ai account (free registration)
 
-## Установка
+## Setup
 
-1. Создай бота у [@BotFather](https://t.me/BotFather) - команда /newbot. Включи у него `can_connect_to_business` (BotFather -> /mybots -> Bot Settings -> Business Mode) или при создании.
+1. Create a bot with [@BotFather](https://t.me/BotFather) (/newbot). Make sure Business Mode is allowed (BotFather -> /mybots -> Bot Settings -> Business Mode).
 
-2. Подключи бота к своему аккаунту: Telegram -> Настройки -> Предпринимательство (Business) -> Чат-боты -> добавь своего бота и выдай права на нужные чаты.
+2. Connect the bot to your account: Telegram -> Settings -> Business -> Chatbots -> add your bot and grant access to the chats you want.
 
-3. Получи ключ OpenRouter: https://openrouter.ai/settings/keys
+3. Get an OpenRouter key: https://openrouter.ai/settings/keys
 
-4. Распакуй архив (или склонируй репозиторий), создай .env:
+4. Unpack the archive (or clone this repo) and create .env:
 
 ```
 cp .env.example .env
 nano .env
 ```
 
-Заполни:
+Fill it in:
 
 ```
-OPENROUTER_API_KEY=sk-or-v1-...   # ключ OpenRouter
-TELEGRAM_BOT_TOKEN=123456:...     # токен от BotFather
-PROXY=http://127.0.0.1:10809      # HTTP-прокси для Telegram; без прокси оставь пустым
+OPENROUTER_API_KEY=sk-or-v1-...   # OpenRouter key
+TELEGRAM_BOT_TOKEN=123456:...     # token from BotFather
+PROXY=http://127.0.0.1:10809      # HTTP proxy for Telegram; leave empty if not needed
 ```
 
-5. Впиши свой Telegram id в bot.py (для доступа к командам):
+5. Put your Telegram id into bot.py (this unlocks the commands):
 
 ```
-OWNER_IDS = {712783140}   # замени на свой числовой id
+OWNER_IDS = {712783140}   # replace with your numeric id
 ```
 
-Узнать свой id можно у бота @userinfobot.
+You can get your id from @userinfobot.
 
-6. Запуск:
+6. Run:
 
 ```
 python3 bot.py
 ```
 
-Фоновый режим:
+Run in the background:
 
 ```
 tmux new-session -d -s answerrouter "python3 bot.py"
-tmux capture-pane -t answerrouter -p   # посмотреть лог
+tmux capture-pane -t answerrouter -p   # view the log
 ```
 
-## Команды (только в личном чате с ботом)
+## Commands (owner's private chat with the bot only)
 
-| Команда | Действие |
+| Command | Action |
 |---|---|
-| /prompt | прислать текущий промпт файлом |
-| /prompt текст | заменить промпт коротким текстом |
-| /promptadd текст | дописать текст в конец промпта |
-| /promptset + файл .txt | заменить промпт содержимым файла |
-| /model | показать текущую модель |
-| /model имя | сменить модель (с автотестом перед переключением) |
-| /help | подсказка |
+| /prompt | send the current prompt as a file |
+| /prompt text | replace the prompt with short text |
+| /promptadd text | append text to the end of the prompt |
+| /promptset + .txt file | replace the prompt with the file contents |
+| /model | show the current model |
+| /model name | switch the model (validated with a test request first) |
+| /help | show help |
 
-## Как научить бота писать как ты
+## How to teach the bot to write like you
 
-1. Скачай экспорт переписки (Telegram Desktop -> Настройки -> Экспорт данных)
-2. Отправь файл + текст `style-extraction-prompt.txt` любой мощной нейросети
-3. Полученный промпт сохрани в файл и загрузи боту через `/promptset`
+1. Export your chat history (Telegram Desktop -> Settings -> Export data)
+2. Send the export file together with the text of style-extraction-prompt.txt to any powerful LLM
+3. Save the resulting prompt to a file and load it into the bot with /promptset
 
-## Безопасность
-- .env с ключами не хранится в репозитории и не попадает в архив
-- Защита от prompt-инъекций: текст собеседника оборачивается в <message> теги, system-промпт запрещает выполнять из них инструкции
-- Фото и голосовые не сохраняются на диск
+## Security
+- .env with keys is not stored in the repo and never included in archives
+- Prompt-injection defense: the contact's text is wrapped in <message> tags; the system prompt forbids following instructions from inside them
+- Photos and voice notes are never written to disk
 
-## Структура
-- `bot.py` - весь код бота (один файл)
-- `prompt.txt` - системный промпт (роль + стиль + примеры)
-- `style-extraction-prompt.txt` - мета-промпт для составления стилевого промпта по экспорту переписки
-- `.env.example` - образец конфига
+## Files
+- bot.py - the whole bot in one file
+- prompt.txt - the system prompt (role + style + examples)
+- style-extraction-prompt.txt - meta-prompt for building a style prompt from a chat export
+- .env.example - config template
