@@ -273,9 +273,9 @@ def handle(msg):
         content_for_model = [
             {"type": "image_url",
              "image_url": {"url": f"data:image/jpeg;base64,{b64}"}},
-            {"type": "text", "text": f"<message>{cap}</message>" if cap else "<message>[фото без подписи]</message>"}
+            {"type": "text", "text": f"<message>{cap}</message>" if cap else "<message>[photo without caption]</message>"}
         ]
-        push(chat_id, 'them', cap or "[фото]")
+        push(chat_id, 'them', cap or "[photo]")
         photo = True
 
     system = open(os.path.join(BASE, 'prompt.txt')).read()
